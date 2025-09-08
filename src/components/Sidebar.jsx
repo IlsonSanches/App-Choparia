@@ -5,30 +5,61 @@ import {
   History, 
   Menu, 
   X,
-  Store
+  Store,
+  Users,
+  LogOut,
+  User,
+  Shield
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 const Sidebar = ({ currentView, setCurrentView, isOpen, setIsOpen }) => {
+  const { user, logout, isAdmin } = useAuth();
+
   const menuItems = [
     {
       id: 'dashboard',
       label: 'Dashboard',
       icon: BarChart3,
-      description: 'Visão geral das vendas'
+      description: 'Visão geral das vendas',
+      roles: ['admin', 'user']
     },
     {
       id: 'vendas',
       label: 'Nova Venda',
       icon: DollarSign,
-      description: 'Lançar nova venda'
+      description: 'Lançar nova venda',
+      roles: ['admin', 'user']
     },
     {
       id: 'historico',
       label: 'Histórico',
       icon: History,
-      description: 'Ver vendas anteriores'
+      description: 'Ver vendas anteriores',
+      roles: ['admin']
+    },
+    {
+      id: 'usuarios',
+      label: 'Usuários',
+      icon: Users,
+      description: 'Gerenciar usuários',
+      roles: ['admin']
     }
   ];
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success('Logout realizado com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao fazer logout');
+    }
+  };
+
+  const filteredMenuItems = menuItems.filter(item => 
+    item.roles.includes(user?.role || 'user')
+  );
 
   return (
     <>
@@ -65,7 +96,7 @@ const Sidebar = ({ currentView, setCurrentView, isOpen, setIsOpen }) => {
 
         {/* Menu Items */}
         <nav className="mt-6">
-          {menuItems.map((item) => {
+          {filteredMenuItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
             
@@ -89,16 +120,47 @@ const Sidebar = ({ currentView, setCurrentView, isOpen, setIsOpen }) => {
           })}
         </nav>
 
-        {/* Footer */}
-        {isOpen && (
-          <div className="absolute bottom-4 left-4 right-4">
-            <div className="bg-secondary rounded-lg p-3">
-              <p className="text-xs text-gray-300 text-center">
-                App Choparia v1.0
-              </p>
+        {/* User Info & Logout */}
+        <div className="absolute bottom-4 left-0 right-0 px-4">
+          {isOpen && (
+            <div className="bg-secondary rounded-lg p-3 mb-3">
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="bg-blue-100 w-8 h-8 rounded-full flex items-center justify-center">
+                  {isAdmin() ? (
+                    <Shield className="w-4 h-4 text-blue-600" />
+                  ) : (
+                    <User className="w-4 h-4 text-blue-600" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">
+                    {user?.name || 'Usuário'}
+                  </p>
+                  <p className="text-xs text-gray-300">
+                    {isAdmin() ? 'Administrador' : 'Usuário'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center space-x-2 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sair</span>
+              </button>
             </div>
-          </div>
-        )}
+          )}
+          
+          {!isOpen && (
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center p-3 text-gray-300 hover:bg-secondary rounded-lg transition-colors"
+              title="Sair"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </div>
     </>
   );
