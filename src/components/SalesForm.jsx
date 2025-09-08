@@ -1,0 +1,298 @@
+import React, { useState } from 'react';
+import { Plus, Save, DollarSign, Calendar, Percent } from 'lucide-react';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
+import toast from 'react-hot-toast';
+
+const SalesForm = () => {
+  const [saleData, setSaleData] = useState({
+    dinheiro: '',
+    debitoInter: '',
+    debitoStone: '',
+    creditoInter: '',
+    creditoStone: '',
+    ifoodPG: '',
+    pix: '',
+    incentivoIfood: '',
+    vendasMesas: '',
+    vendasEntregas: '',
+    dataVenda: new Date().toISOString().slice(0, 16), // Data e hora atual
+    observacoes: ''
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const paymentMethods = [
+    { key: 'dinheiro', label: 'Dinheiro', color: 'bg-green-500', icon: '💵' },
+    { key: 'debitoInter', label: 'Débito Inter', color: 'bg-orange-500', icon: '🏦' },
+    { key: 'debitoStone', label: 'Débito Stone', color: 'bg-gray-600', icon: '💳' },
+    { key: 'creditoInter', label: 'Crédito Inter', color: 'bg-orange-600', icon: '🏦' },
+    { key: 'creditoStone', label: 'Crédito Stone', color: 'bg-gray-700', icon: '💳' },
+    { key: 'ifoodPG', label: 'iFood PG', color: 'bg-red-500', icon: '🍔' },
+    { key: 'pix', label: 'PIX', color: 'bg-blue-500', icon: '📱' },
+    { key: 'incentivoIfood', label: 'Incentivo iFood', color: 'bg-yellow-500', icon: '🎁' }
+  ];
+
+  const salesTypes = [
+    { key: 'vendasMesas', label: 'Vendas Mesas', color: 'bg-purple-500', icon: '🍽️' },
+    { key: 'vendasEntregas', label: 'Vendas Entregas', color: 'bg-indigo-500', icon: '🚚' }
+  ];
+
+  const handleInputChange = (field, value) => {
+    // Remove caracteres não numéricos e formata como moeda
+    const numericValue = value.replace(/[^\d]/g, '');
+    const formattedValue = numericValue ? (parseFloat(numericValue) / 100).toFixed(2) : '';
+    
+    setSaleData(prev => ({
+      ...prev,
+      [field]: formattedValue
+    }));
+  };
+
+  const formatCurrency = (value) => {
+    if (!value) return '';
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(parseFloat(value));
+  };
+
+  const calculateSubtotal = () => {
+    return paymentMethods.reduce((total, method) => {
+      const value = parseFloat(saleData[method.key]) || 0;
+      return total + value;
+    }, 0);
+  };
+
+  const calculateTotal = () => {
+    return calculateSubtotal(); // Total é igual ao subtotal (sem desconto)
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const total = calculateTotal();
+      
+      if (total === 0) {
+        toast.error('Digite pelo menos um valor para registrar a venda');
+        return;
+      }
+
+      const saleRecord = {
+        ...saleData,
+        subtotal: calculateSubtotal().toFixed(2),
+        total: total.toFixed(2),
+        dataVenda: new Date(saleData.dataVenda), // Usar a data selecionada pelo usuário
+        timestamp: Date.now()
+      };
+
+      // Salvar no Firebase
+      await addDoc(collection(db, 'vendas'), saleRecord);
+      
+      toast.success('Venda registrada com sucesso!');
+      
+      // Limpar formulário
+      setSaleData({
+        dinheiro: '',
+        debitoInter: '',
+        debitoStone: '',
+        creditoInter: '',
+        creditoStone: '',
+        ifoodPG: '',
+        pix: '',
+        incentivoIfood: '',
+        vendasMesas: '',
+        vendasEntregas: '',
+        dataVenda: new Date().toISOString().slice(0, 16),
+        observacoes: ''
+      });
+      
+    } catch (error) {
+      console.error('Erro ao salvar venda:', error);
+      toast.error('Erro ao registrar venda. Tente novamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto">
+      <div className="bg-white rounded-lg shadow-lg">
+        {/* Header */}
+        <div className="bg-primary text-white p-6 rounded-t-lg">
+          <div className="flex items-center space-x-3">
+            <DollarSign className="w-8 h-8" />
+            <div>
+              <h1 className="text-2xl font-bold">Registrar Nova Venda</h1>
+              <p className="text-gray-300">Insira os valores por forma de pagamento</p>
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6">
+          {/* Campo de Data */}
+          <div className="mb-6">
+            <div className="bg-blue-50 rounded-lg p-4 max-w-md">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <label className="font-medium text-gray-700">
+                  Data da Venda
+                </label>
+              </div>
+              <input
+                type="datetime-local"
+                value={saleData.dataVenda}
+                onChange={(e) => setSaleData(prev => ({ ...prev, dataVenda: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          {/* Campos de Vendas Mesas e Entregas */}
+          <div>
+            <h4 className="text-md font-semibold text-gray-700 mb-2">Informações de Vendas</h4>
+            <p className="text-sm text-gray-500 mb-3">Campos informativos (não somados ao total)</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {salesTypes.map((type) => (
+                <div key={type.key} className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className={`w-8 h-8 ${type.color} rounded-full flex items-center justify-center text-white text-sm`}>
+                      {type.icon}
+                    </div>
+                    <label className="font-medium text-gray-700">
+                      {type.label}
+                    </label>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="R$ 0,00"
+                    value={saleData[type.key] ? formatCurrency(saleData[type.key]) : ''}
+                    onChange={(e) => handleInputChange(type.key, e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Grid de formas de pagamento */}
+          <div>
+            <h4 className="text-md font-semibold text-gray-700 mb-3">Formas de Pagamento</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            {paymentMethods.map((method) => (
+              <div key={method.key} className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className={`w-8 h-8 ${method.color} rounded-full flex items-center justify-center text-white text-sm`}>
+                    {method.icon}
+                  </div>
+                  <label className="font-medium text-gray-700">
+                    {method.label}
+                  </label>
+                </div>
+                <input
+                  type="text"
+                  placeholder="R$ 0,00"
+                  value={saleData[method.key] ? formatCurrency(saleData[method.key]) : ''}
+                  onChange={(e) => handleInputChange(method.key, e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                />
+              </div>
+            ))}
+            </div>
+          </div>
+
+          {/* Observações */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Observações (opcional)
+            </label>
+            <textarea
+              value={saleData.observacoes}
+              onChange={(e) => setSaleData(prev => ({ ...prev, observacoes: e.target.value }))}
+              placeholder="Digite observações sobre esta venda..."
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+            />
+          </div>
+
+          {/* Resumo da Venda */}
+          <div className="bg-accent bg-opacity-10 rounded-lg p-4 mb-6">
+            <h3 className="text-lg font-semibold text-gray-700 mb-3">Resumo da Venda</h3>
+            
+            <div className="space-y-2">
+              {/* Informações de Vendas */}
+              {(parseFloat(saleData.vendasMesas) > 0 || parseFloat(saleData.vendasEntregas) > 0) && (
+                <>
+                  <div className="text-sm font-medium text-gray-600 mb-2">Informações:</div>
+                  {parseFloat(saleData.vendasMesas) > 0 && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">🍽️ Vendas Mesas:</span>
+                      <span className="font-medium text-purple-600">
+                        {formatCurrency(parseFloat(saleData.vendasMesas).toFixed(2))}
+                      </span>
+                    </div>
+                  )}
+                  {parseFloat(saleData.vendasEntregas) > 0 && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">🚚 Vendas Entregas:</span>
+                      <span className="font-medium text-indigo-600">
+                        {formatCurrency(parseFloat(saleData.vendasEntregas).toFixed(2))}
+                      </span>
+                    </div>
+                  )}
+                  <hr className="my-2 border-gray-300" />
+                </>
+              )}
+              
+              {/* Total da Venda */}
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-medium text-gray-700">Total da Venda:</span>
+                <span className="text-2xl font-bold text-accent">
+                  {formatCurrency(calculateTotal().toFixed(2))}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Botões */}
+          <div className="flex space-x-4">
+            <button
+              type="submit"
+              disabled={isLoading || calculateTotal() === 0}
+              className="flex-1 bg-accent text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  <span>Registrar Venda</span>
+                </>
+              )}
+            </button>
+            
+            <button
+              type="button"
+              onClick={() => setSaleData({
+                dinheiro: '', debitoInter: '', debitoStone: '', 
+                creditoInter: '', creditoStone: '', ifoodPG: '', pix: '', incentivoIfood: '',
+                vendasMesas: '', vendasEntregas: '',
+                dataVenda: new Date().toISOString().slice(0, 16),
+                observacoes: ''
+              })}
+              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Limpar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default SalesForm;
