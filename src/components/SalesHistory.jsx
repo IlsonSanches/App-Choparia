@@ -40,7 +40,9 @@ const SalesHistory = () => {
 
   const salesTypes = [
     { key: 'vendasMesas', label: 'Vendas Mesas', icon: '🍽️' },
-    { key: 'vendasEntregas', label: 'Vendas Entregas', icon: '🚚' }
+    { key: 'vendasEntregas', label: 'Vendas Entregas', icon: '🚚' },
+    { key: 'caixaInicial', label: 'Caixa Inicial', icon: '💰' },
+    { key: 'caixaFinal', label: 'Caixa Final', icon: '💳' }
   ];
 
   const formatCurrency = (value) => {
@@ -142,12 +144,14 @@ const SalesHistory = () => {
       incentivoIfood: sale.incentivoIfood || '',
       vendasMesas: sale.vendasMesas || '',
       vendasEntregas: sale.vendasEntregas || '',
+      caixaInicial: sale.caixaInicial || '',
+      caixaFinal: sale.caixaFinal || '',
       observacoes: sale.observacoes || ''
     });
   };
 
   const handleInputChange = (field, value) => {
-    if (['dinheiro', 'debitoInter', 'debitoStone', 'creditoInter', 'creditoStone', 'ifoodPG', 'pix', 'incentivoIfood', 'vendasMesas', 'vendasEntregas'].includes(field)) {
+    if (['dinheiro', 'debitoInter', 'debitoStone', 'creditoInter', 'creditoStone', 'ifoodPG', 'pix', 'incentivoIfood', 'vendasMesas', 'vendasEntregas', 'caixaInicial', 'caixaFinal'].includes(field)) {
       // Remove caracteres não numéricos e formata como moeda
       const numericValue = value.replace(/[^\d]/g, '');
       const formattedValue = numericValue ? (parseFloat(numericValue) / 100).toFixed(2) : '';
@@ -215,13 +219,15 @@ const SalesHistory = () => {
   };
 
   const exportToCSV = () => {
-    const headers = ['Data', 'Total', 'Vendas Mesas', 'Vendas Entregas', 'Dinheiro', 'Débito Inter', 'Débito Stone', 'Crédito Inter', 'Crédito Stone', 'iFood PG', 'PIX', 'Incentivo iFood', 'Observações'];
+    const headers = ['Data', 'Total', 'Vendas Mesas', 'Vendas Entregas', 'Caixa Inicial', 'Caixa Final', 'Dinheiro', 'Débito Inter', 'Débito Stone', 'Crédito Inter', 'Crédito Stone', 'iFood PG', 'PIX', 'Incentivo iFood', 'Observações'];
     
     const csvData = filteredSales.map(sale => [
       format(sale.dataVenda, 'dd/MM/yyyy HH:mm'),
       sale.total,
       sale.vendasMesas || '0',
       sale.vendasEntregas || '0',
+      sale.caixaInicial || '0',
+      sale.caixaFinal || '0',
       sale.dinheiro || '0',
       sale.debitoInter || '0',
       sale.debitoStone || '0',
@@ -477,7 +483,7 @@ const SalesHistory = () => {
                 <div>
                   <h4 className="text-md font-semibold text-gray-700 mb-2">Informações de Vendas</h4>
                   <p className="text-sm text-gray-500 mb-3">Campos informativos (não somados ao total)</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     {salesTypes.map((type) => (
                       <div key={type.key} className="bg-gray-50 rounded-lg p-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">

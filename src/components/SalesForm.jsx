@@ -16,6 +16,8 @@ const SalesForm = () => {
     incentivoIfood: '',
     vendasMesas: '',
     vendasEntregas: '',
+    caixaInicial: '',
+    caixaFinal: '',
     dataVenda: new Date().toISOString().slice(0, 16), // Data e hora atual
     observacoes: ''
   });
@@ -35,7 +37,9 @@ const SalesForm = () => {
 
   const salesTypes = [
     { key: 'vendasMesas', label: 'Vendas Mesas', color: 'bg-purple-500', icon: '🍽️' },
-    { key: 'vendasEntregas', label: 'Vendas Entregas', color: 'bg-indigo-500', icon: '🚚' }
+    { key: 'vendasEntregas', label: 'Vendas Entregas', color: 'bg-indigo-500', icon: '🚚' },
+    { key: 'caixaInicial', label: 'Caixa Inicial', color: 'bg-teal-500', icon: '💰' },
+    { key: 'caixaFinal', label: 'Caixa Final', color: 'bg-emerald-500', icon: '💳' }
   ];
 
   const handleInputChange = (field, value) => {
@@ -105,6 +109,8 @@ const SalesForm = () => {
         incentivoIfood: '',
         vendasMesas: '',
         vendasEntregas: '',
+        caixaInicial: '',
+        caixaFinal: '',
         dataVenda: new Date().toISOString().slice(0, 16),
         observacoes: ''
       });
@@ -156,7 +162,7 @@ const SalesForm = () => {
           <div>
             <h4 className="text-md font-semibold text-gray-700 mb-2">Informações de Vendas</h4>
             <p className="text-sm text-gray-500 mb-3">Campos informativos (não somados ao total)</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {salesTypes.map((type) => (
                 <div key={type.key} className="bg-gray-50 rounded-lg p-4">
                   <div className="flex items-center space-x-2 mb-2">
@@ -225,7 +231,7 @@ const SalesForm = () => {
             
             <div className="space-y-2">
               {/* Informações de Vendas */}
-              {(parseFloat(saleData.vendasMesas) > 0 || parseFloat(saleData.vendasEntregas) > 0) && (
+              {(parseFloat(saleData.vendasMesas) > 0 || parseFloat(saleData.vendasEntregas) > 0 || parseFloat(saleData.caixaInicial) > 0 || parseFloat(saleData.caixaFinal) > 0) && (
                 <>
                   <div className="text-sm font-medium text-gray-600 mb-2">Informações:</div>
                   {parseFloat(saleData.vendasMesas) > 0 && (
@@ -241,6 +247,22 @@ const SalesForm = () => {
                       <span className="text-gray-600">🚚 Vendas Entregas:</span>
                       <span className="font-medium text-indigo-600">
                         {formatCurrency(parseFloat(saleData.vendasEntregas).toFixed(2))}
+                      </span>
+                    </div>
+                  )}
+                  {parseFloat(saleData.caixaInicial) > 0 && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">💰 Caixa Inicial:</span>
+                      <span className="font-medium text-teal-600">
+                        {formatCurrency(parseFloat(saleData.caixaInicial).toFixed(2))}
+                      </span>
+                    </div>
+                  )}
+                  {parseFloat(saleData.caixaFinal) > 0 && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">💳 Caixa Final:</span>
+                      <span className="font-medium text-emerald-600">
+                        {formatCurrency(parseFloat(saleData.caixaFinal).toFixed(2))}
                       </span>
                     </div>
                   )}
@@ -280,7 +302,7 @@ const SalesForm = () => {
               onClick={() => setSaleData({
                 dinheiro: '', debitoInter: '', debitoStone: '', 
                 creditoInter: '', creditoStone: '', ifoodPG: '', pix: '', incentivoIfood: '',
-                vendasMesas: '', vendasEntregas: '',
+                vendasMesas: '', vendasEntregas: '', caixaInicial: '', caixaFinal: '',
                 dataVenda: new Date().toISOString().slice(0, 16),
                 observacoes: ''
               })}

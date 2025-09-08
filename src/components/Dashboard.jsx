@@ -35,7 +35,9 @@ const Dashboard = () => {
 
   const salesTypes = [
     { key: 'vendasMesas', label: 'Vendas Mesas', color: 'bg-purple-500', icon: '🍽️' },
-    { key: 'vendasEntregas', label: 'Vendas Entregas', color: 'bg-indigo-500', icon: '🚚' }
+    { key: 'vendasEntregas', label: 'Vendas Entregas', color: 'bg-indigo-500', icon: '🚚' },
+    { key: 'caixaInicial', label: 'Caixa Inicial', color: 'bg-teal-500', icon: '💰' },
+    { key: 'caixaFinal', label: 'Caixa Final', color: 'bg-emerald-500', icon: '💳' }
   ];
 
   const formatCurrency = (value) => {
