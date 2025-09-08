@@ -47,6 +47,7 @@ const Dashboard = () => {
     }).format(value || 0);
   };
 
+
   const loadSalesData = async () => {
     setIsLoading(true);
     try {

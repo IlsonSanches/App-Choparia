@@ -15,7 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 const Sidebar = ({ currentView, setCurrentView, isOpen, setIsOpen }) => {
-  const { user, logout, isAdmin } = useAuth();
+  const { user, userRole, logout, isAdmin } = useAuth();
 
   const menuItems = [
     {
@@ -58,8 +58,9 @@ const Sidebar = ({ currentView, setCurrentView, isOpen, setIsOpen }) => {
   };
 
   const filteredMenuItems = menuItems.filter(item => 
-    item.roles.includes(user?.role || 'user')
+    item.roles.includes(userRole || 'user')
   );
+
 
   return (
     <>

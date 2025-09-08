@@ -22,9 +22,14 @@ export const AuthProvider = ({ children }) => {
   // Carregar dados do usuário do Firestore
   const loadUserData = async (firebaseUser) => {
     try {
+      console.log('🔍 Carregando dados do usuário:', firebaseUser.uid);
+      
+      // Método 1: Buscar pelo documento com UID como ID
       const userDoc = await getDoc(doc(db, 'usuarios', firebaseUser.uid));
+      
       if (userDoc.exists()) {
         const userData = userDoc.data();
+        console.log('📄 Documento encontrado (método 1):', userData);
         setUserRole(userData.role || 'user');
         setUser({
           ...firebaseUser,
@@ -32,17 +37,41 @@ export const AuthProvider = ({ children }) => {
           name: userData.name || firebaseUser.email,
           ...userData
         });
-      } else {
-        // Se não existe no Firestore, considera como usuário comum
-        setUserRole('user');
+        return;
+      }
+      
+      // Método 2: Buscar por query onde uid = firebaseUser.uid
+      console.log('🔍 Documento não encontrado, tentando query...');
+      const userQuery = query(
+        collection(db, 'usuarios'),
+        where('uid', '==', firebaseUser.uid)
+      );
+      const querySnapshot = await getDocs(userQuery);
+      
+      if (!querySnapshot.empty) {
+        const userData = querySnapshot.docs[0].data();
+        console.log('📄 Documento encontrado (método 2):', userData);
+        setUserRole(userData.role || 'user');
         setUser({
           ...firebaseUser,
-          role: 'user',
-          name: firebaseUser.email
+          role: userData.role || 'user',
+          name: userData.name || firebaseUser.email,
+          ...userData
         });
+        return;
       }
+      
+      // Se não existe no Firestore, considera como usuário comum
+      console.log('❌ Nenhum documento encontrado, definindo como user');
+      setUserRole('user');
+      setUser({
+        ...firebaseUser,
+        role: 'user',
+        name: firebaseUser.email
+      });
+      
     } catch (error) {
-      console.error('Erro ao carregar dados do usuário:', error);
+      console.error('❌ Erro ao carregar dados do usuário:', error);
       setUserRole('user');
       setUser({
         ...firebaseUser,
