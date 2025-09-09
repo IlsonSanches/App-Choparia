@@ -14,10 +14,9 @@ const SalesForm = () => {
     ifoodPG: '',
     pix: '',
     incentivoIfood: '',
+    ifoodDesconto: '',
     vendasMesas: '',
     vendasEntregas: '',
-    encaixe: '',
-    desencaixe: '',
     dataVenda: new Date().toISOString().slice(0, 16), // Data e hora atual
     observacoes: ''
   });
@@ -31,13 +30,18 @@ const SalesForm = () => {
     { key: 'creditoInter', label: 'Crédito Inter', color: 'bg-orange-600', icon: '🏦' },
     { key: 'creditoStone', label: 'Crédito Stone', color: 'bg-gray-700', icon: '💳' },
     { key: 'ifoodPG', label: 'iFood PG', color: 'bg-red-500', icon: '🍔' },
-    { key: 'pix', label: 'PIX', color: 'bg-blue-500', icon: '📱' },
-    { key: 'incentivoIfood', label: 'Incentivo iFood', color: 'bg-yellow-500', icon: '🎁' }
+    { key: 'pix', label: 'PIX', color: 'bg-blue-500', icon: '📱' }
   ];
 
   const salesTypes = [
     { key: 'vendasMesas', label: 'Vendas Mesas', color: 'bg-purple-500', icon: '🍽️' },
     { key: 'vendasEntregas', label: 'Vendas Entregas', color: 'bg-indigo-500', icon: '🚚' }
+  ];
+
+  // Campos que aparecem na seção de pagamentos mas NÃO somam no total
+  const nonSumPayments = [
+    { key: 'incentivoIfood', label: 'Incentivo iFood', color: 'bg-yellow-400', icon: '🎁' },
+    { key: 'ifoodDesconto', label: 'iFood Desconto', color: 'bg-red-300', icon: '📉' }
   ];
 
   const handleInputChange = (field, value) => {
@@ -73,6 +77,12 @@ const SalesForm = () => {
     return subtotal + encaixe - desencaixe;
   };
 
+  const calculateTotalSagres = () => {
+    const vendasMesas = parseFloat(saleData.vendasMesas) || 0;
+    const vendasEntregas = parseFloat(saleData.vendasEntregas) || 0;
+    return vendasMesas + vendasEntregas;
+  };
+
   const calculateVendasTotal = () => {
     const vendasMesas = parseFloat(saleData.vendasMesas) || 0;
     const vendasEntregas = parseFloat(saleData.vendasEntregas) || 0;
@@ -95,6 +105,7 @@ const SalesForm = () => {
         ...saleData,
         subtotal: calculateSubtotal().toFixed(2),
         total: total.toFixed(2),
+        totalSagres: calculateTotalSagres().toFixed(2), // Soma automática de Mesas + Entregas
         dataVenda: new Date(saleData.dataVenda), // Usar a data selecionada pelo usuário
         timestamp: Date.now()
       };
@@ -215,6 +226,30 @@ const SalesForm = () => {
                 />
               </div>
             ))}
+            
+            {/* Campos de pagamento que NÃO somam */}
+            {nonSumPayments.map((payment) => (
+              <div key={payment.key} className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-red-200">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className={`w-8 h-8 ${payment.color} rounded-full flex items-center justify-center text-white text-sm`}>
+                    {payment.icon}
+                  </div>
+                  <label className="font-medium text-gray-700">
+                    {payment.label}
+                  </label>
+                  <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">
+                    Não soma
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  placeholder="R$ 0,00"
+                  value={saleData[payment.key] ? formatCurrency(saleData[payment.key]) : ''}
+                  onChange={(e) => handleInputChange(payment.key, e.target.value)}
+                  className="w-full px-3 py-2 border border-red-200 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-transparent bg-red-50"
+                />
+              </div>
+            ))}
             </div>
           </div>
 
@@ -303,11 +338,11 @@ const SalesForm = () => {
                       </span>
                     </div>
                   )}
-                  {calculateVendasTotal() > 0 && (
+                  {calculateTotalSagres() > 0 && (
                     <div className="flex justify-between items-center text-sm bg-blue-50 p-2 rounded-lg mt-2">
-                      <span className="text-gray-700 font-medium">📊 Total Vendas:</span>
+                      <span className="text-gray-700 font-medium">🍺 Total Sagres:</span>
                       <span className="font-bold text-blue-600">
-                        {formatCurrency(calculateVendasTotal().toFixed(2))}
+                        {formatCurrency(calculateTotalSagres().toFixed(2))}
                       </span>
                     </div>
                   )}
@@ -349,6 +384,30 @@ const SalesForm = () => {
               )}
               
               {/* Total Final da Venda */}
+              {/* Campos iFood Informativos */}
+              {(parseFloat(saleData.incentivoIfood) > 0 || parseFloat(saleData.ifoodDesconto) > 0) && (
+                <>
+                  <div className="text-sm font-medium text-gray-600 mb-2">Valores iFood (Informativos):</div>
+                  {parseFloat(saleData.incentivoIfood) > 0 && (
+                    <div className="flex justify-between items-center text-sm bg-yellow-50 p-2 rounded-lg mb-1">
+                      <span className="text-gray-600">🎁 Incentivo iFood:</span>
+                      <span className="font-medium text-yellow-600">
+                        {formatCurrency(parseFloat(saleData.incentivoIfood).toFixed(2))}
+                      </span>
+                    </div>
+                  )}
+                  {parseFloat(saleData.ifoodDesconto) > 0 && (
+                    <div className="flex justify-between items-center text-sm bg-red-50 p-2 rounded-lg">
+                      <span className="text-gray-600">📉 iFood Desconto:</span>
+                      <span className="font-medium text-red-600">
+                        {formatCurrency(parseFloat(saleData.ifoodDesconto).toFixed(2))}
+                      </span>
+                    </div>
+                  )}
+                  <hr className="my-2 border-gray-300" />
+                </>
+              )}
+              
               <div className="flex justify-between items-center">
                 <span className="text-lg font-medium text-gray-700">Total da Venda:</span>
                 <span className="text-2xl font-bold text-accent">
@@ -379,9 +438,8 @@ const SalesForm = () => {
               type="button"
               onClick={() => setSaleData({
                 dinheiro: '', debitoInter: '', debitoStone: '', 
-                creditoInter: '', creditoStone: '', ifoodPG: '', pix: '', incentivoIfood: '',
-                vendasMesas: '', vendasEntregas: '',
-                encaixe: '', desencaixe: '',
+                creditoInter: '', creditoStone: '', ifoodPG: '', pix: '',
+                incentivoIfood: '', ifoodDesconto: '', vendasMesas: '', vendasEntregas: '',
                 dataVenda: new Date().toISOString().slice(0, 16),
                 observacoes: ''
               })}

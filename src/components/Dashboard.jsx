@@ -29,13 +29,14 @@ const Dashboard = () => {
     { key: 'creditoInter', label: 'Crédito Inter', color: 'bg-orange-600', icon: '🏦' },
     { key: 'creditoStone', label: 'Crédito Stone', color: 'bg-gray-700', icon: '💳' },
     { key: 'ifoodPG', label: 'iFood PG', color: 'bg-red-500', icon: '🍔' },
-    { key: 'pix', label: 'PIX', color: 'bg-blue-500', icon: '📱' },
-    { key: 'incentivoIfood', label: 'Incentivo iFood', color: 'bg-yellow-500', icon: '🎁' }
+    { key: 'pix', label: 'PIX', color: 'bg-blue-500', icon: '📱' }
   ];
 
   const salesTypes = [
     { key: 'vendasMesas', label: 'Vendas Mesas', color: 'bg-purple-500', icon: '🍽️' },
-    { key: 'vendasEntregas', label: 'Vendas Entregas', color: 'bg-indigo-500', icon: '🚚' }
+    { key: 'vendasEntregas', label: 'Vendas Entregas', color: 'bg-indigo-500', icon: '🚚' },
+    { key: 'incentivoIfood', label: 'Incentivo iFood', color: 'bg-yellow-400', icon: '🎁' },
+    { key: 'ifoodDesconto', label: 'iFood Desconto', color: 'bg-red-300', icon: '📉' }
   ];
 
   const formatCurrency = (value) => {
@@ -276,23 +277,23 @@ const Dashboard = () => {
               );
             })}
             
-            {/* Total de Vendas Mesas + Entregas */}
+            {/* Total Sagres (Mesas + Entregas) */}
             {(salesData.bySalesType.vendasMesas > 0 || salesData.bySalesType.vendasEntregas > 0) && (
-              <div className="mt-4 pt-3 border-t border-gray-200">
+              <div className="mt-4 pt-3 border-t border-blue-200">
                 <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs">
-                      📊
+                      🍺
                     </div>
-                    <span className="text-sm font-bold text-gray-700">
-                      Total Vendas
+                    <span className="text-sm font-bold text-blue-700">
+                      Total Sagres
                     </span>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-bold text-blue-600">
+                    <div className="text-lg font-bold text-blue-600">
                       {formatCurrency((salesData.bySalesType.vendasMesas || 0) + (salesData.bySalesType.vendasEntregas || 0))}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-blue-500">
                       Mesas + Entregas
                     </div>
                   </div>

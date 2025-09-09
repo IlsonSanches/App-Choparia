@@ -34,13 +34,14 @@ const SalesHistory = () => {
     { key: 'creditoInter', label: 'Crédito Inter', icon: '🏦' },
     { key: 'creditoStone', label: 'Crédito Stone', icon: '💳' },
     { key: 'ifoodPG', label: 'iFood PG', icon: '🍔' },
-    { key: 'pix', label: 'PIX', icon: '📱' },
-    { key: 'incentivoIfood', label: 'Incentivo iFood', icon: '🎁' }
+    { key: 'pix', label: 'PIX', icon: '📱' }
   ];
 
   const salesTypes = [
     { key: 'vendasMesas', label: 'Vendas Mesas', icon: '🍽️' },
-    { key: 'vendasEntregas', label: 'Vendas Entregas', icon: '🚚' }
+    { key: 'vendasEntregas', label: 'Vendas Entregas', icon: '🚚' },
+    { key: 'incentivoIfood', label: 'Incentivo iFood', icon: '🎁' },
+    { key: 'ifoodDesconto', label: 'iFood Desconto', icon: '📉' }
   ];
 
   const formatCurrency = (value) => {
@@ -139,15 +140,16 @@ const SalesHistory = () => {
       creditoStone: sale.creditoStone || '',
       ifoodPG: sale.ifoodPG || '',
       pix: sale.pix || '',
-      incentivoIfood: sale.incentivoIfood || '',
       vendasMesas: sale.vendasMesas || '',
       vendasEntregas: sale.vendasEntregas || '',
+      incentivoIfood: sale.incentivoIfood || '',
+      ifoodDesconto: sale.ifoodDesconto || '',
       observacoes: sale.observacoes || ''
     });
   };
 
   const handleInputChange = (field, value) => {
-    if (['dinheiro', 'debitoInter', 'debitoStone', 'creditoInter', 'creditoStone', 'ifoodPG', 'pix', 'incentivoIfood', 'vendasMesas', 'vendasEntregas'].includes(field)) {
+    if (['dinheiro', 'debitoInter', 'debitoStone', 'creditoInter', 'creditoStone', 'ifoodPG', 'pix', 'vendasMesas', 'vendasEntregas', 'incentivoIfood', 'ifoodDesconto'].includes(field)) {
       // Remove caracteres não numéricos e formata como moeda
       const numericValue = value.replace(/[^\d]/g, '');
       const formattedValue = numericValue ? (parseFloat(numericValue) / 100).toFixed(2) : '';
@@ -215,13 +217,15 @@ const SalesHistory = () => {
   };
 
   const exportToCSV = () => {
-    const headers = ['Data', 'Total', 'Vendas Mesas', 'Vendas Entregas', 'Dinheiro', 'Débito Inter', 'Débito Stone', 'Crédito Inter', 'Crédito Stone', 'iFood PG', 'PIX', 'Incentivo iFood', 'Observações'];
+    const headers = ['Data', 'Total', 'Vendas Mesas', 'Vendas Entregas', 'Incentivo iFood', 'iFood Desconto', 'Dinheiro', 'Débito Inter', 'Débito Stone', 'Crédito Inter', 'Crédito Stone', 'iFood PG', 'PIX', 'Observações'];
     
     const csvData = filteredSales.map(sale => [
       format(sale.dataVenda, 'dd/MM/yyyy HH:mm'),
       sale.total,
       sale.vendasMesas || '0',
       sale.vendasEntregas || '0',
+      sale.incentivoIfood || '0',
+      sale.ifoodDesconto || '0',
       sale.dinheiro || '0',
       sale.debitoInter || '0',
       sale.debitoStone || '0',
@@ -642,21 +646,66 @@ const SalesHistory = () => {
                     Informações de Vendas
                   </label>
                   <p className="text-xs text-gray-500 mb-3">Valores informativos registrados</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                    {salesTypes.map(type => {
-                      const value = parseFloat(selectedSale[type.key] || 0);
-                      return (
-                        <div key={type.key} className={`p-3 rounded-lg ${value > 0 ? 'bg-purple-50 border border-purple-200' : 'bg-gray-50'}`}>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">
-                              {type.icon} {type.label}
-                            </span>
-                            <span className={`font-semibold ${value > 0 ? 'text-purple-600' : 'text-gray-400'}`}>
-                              {formatCurrency(value)}
+                  <div className="space-y-3 mb-4">
+                    {/* Vendas individuais */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {salesTypes.filter(type => ['vendasMesas', 'vendasEntregas'].includes(type.key)).map(type => {
+                        const value = parseFloat(selectedSale[type.key] || 0);
+                        return (
+                          <div key={type.key} className={`p-3 rounded-lg ${value > 0 ? 'bg-purple-50 border border-purple-200' : 'bg-gray-50'}`}>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium">
+                                {type.icon} {type.label}
+                              </span>
+                              <span className={`font-semibold ${value > 0 ? 'text-purple-600' : 'text-gray-400'}`}>
+                                {formatCurrency(value)}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Total Sagres */}
+                    {((parseFloat(selectedSale.vendasMesas) || 0) + (parseFloat(selectedSale.vendasEntregas) || 0)) > 0 && (
+                      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs">
+                              🍺
+                            </div>
+                            <span className="text-sm font-bold text-blue-700">
+                              Total Sagres
                             </span>
                           </div>
+                          <span className="text-lg font-bold text-blue-600">
+                            {formatCurrency(((parseFloat(selectedSale.vendasMesas) || 0) + (parseFloat(selectedSale.vendasEntregas) || 0)).toFixed(2))}
+                          </span>
                         </div>
-                      );
+                        <div className="text-xs text-blue-500 text-center mt-1">
+                          Soma automática: Mesas + Entregas
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Outros campos informativos (iFood) */}
+                    {salesTypes.filter(type => ['incentivoIfood', 'ifoodDesconto'].includes(type.key)).map(type => {
+                      const value = parseFloat(selectedSale[type.key] || 0);
+                      if (value > 0) {
+                        return (
+                          <div key={type.key} className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium">
+                                {type.icon} {type.label}
+                              </span>
+                              <span className="font-semibold text-yellow-600">
+                                {formatCurrency(value)}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
                     })}
                   </div>
                 </div>
