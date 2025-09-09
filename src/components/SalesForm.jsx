@@ -16,8 +16,8 @@ const SalesForm = () => {
     incentivoIfood: '',
     vendasMesas: '',
     vendasEntregas: '',
-    caixaInicial: '',
-    caixaFinal: '',
+    encaixe: '',
+    desencaixe: '',
     dataVenda: new Date().toISOString().slice(0, 16), // Data e hora atual
     observacoes: ''
   });
@@ -37,9 +37,7 @@ const SalesForm = () => {
 
   const salesTypes = [
     { key: 'vendasMesas', label: 'Vendas Mesas', color: 'bg-purple-500', icon: '🍽️' },
-    { key: 'vendasEntregas', label: 'Vendas Entregas', color: 'bg-indigo-500', icon: '🚚' },
-    { key: 'caixaInicial', label: 'Caixa Inicial', color: 'bg-teal-500', icon: '💰' },
-    { key: 'caixaFinal', label: 'Caixa Final', color: 'bg-emerald-500', icon: '💳' }
+    { key: 'vendasEntregas', label: 'Vendas Entregas', color: 'bg-indigo-500', icon: '🚚' }
   ];
 
   const handleInputChange = (field, value) => {
@@ -69,7 +67,16 @@ const SalesForm = () => {
   };
 
   const calculateTotal = () => {
-    return calculateSubtotal(); // Total é igual ao subtotal (sem desconto)
+    const subtotal = calculateSubtotal();
+    const encaixe = parseFloat(saleData.encaixe) || 0;
+    const desencaixe = parseFloat(saleData.desencaixe) || 0;
+    return subtotal + encaixe - desencaixe;
+  };
+
+  const calculateVendasTotal = () => {
+    const vendasMesas = parseFloat(saleData.vendasMesas) || 0;
+    const vendasEntregas = parseFloat(saleData.vendasEntregas) || 0;
+    return vendasMesas + vendasEntregas;
   };
 
   const handleSubmit = async (e) => {
@@ -109,8 +116,8 @@ const SalesForm = () => {
         incentivoIfood: '',
         vendasMesas: '',
         vendasEntregas: '',
-        caixaInicial: '',
-        caixaFinal: '',
+        encaixe: '',
+        desencaixe: '',
         dataVenda: new Date().toISOString().slice(0, 16),
         observacoes: ''
       });
@@ -211,6 +218,52 @@ const SalesForm = () => {
             </div>
           </div>
 
+          {/* Encaixe e Desencaixe */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">Ajustes de Caixa</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Encaixe */}
+              <div className="bg-green-50 rounded-lg p-4">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white text-sm">
+                    ➕
+                  </div>
+                  <label className="font-medium text-gray-700">
+                    Encaixe
+                  </label>
+                </div>
+                <input
+                  type="text"
+                  placeholder="R$ 0,00"
+                  value={saleData.encaixe ? formatCurrency(saleData.encaixe) : ''}
+                  onChange={(e) => handleInputChange('encaixe', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">Valor a ser somado ao total</p>
+              </div>
+
+              {/* Desencaixe */}
+              <div className="bg-red-50 rounded-lg p-4">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white text-sm">
+                    ➖
+                  </div>
+                  <label className="font-medium text-gray-700">
+                    Desencaixe
+                  </label>
+                </div>
+                <input
+                  type="text"
+                  placeholder="R$ 0,00"
+                  value={saleData.desencaixe ? formatCurrency(saleData.desencaixe) : ''}
+                  onChange={(e) => handleInputChange('desencaixe', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">Valor a ser subtraído do total</p>
+              </div>
+            </div>
+          </div>
+
           {/* Observações */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -231,7 +284,7 @@ const SalesForm = () => {
             
             <div className="space-y-2">
               {/* Informações de Vendas */}
-              {(parseFloat(saleData.vendasMesas) > 0 || parseFloat(saleData.vendasEntregas) > 0 || parseFloat(saleData.caixaInicial) > 0 || parseFloat(saleData.caixaFinal) > 0) && (
+              {(parseFloat(saleData.vendasMesas) > 0 || parseFloat(saleData.vendasEntregas) > 0) && (
                 <>
                   <div className="text-sm font-medium text-gray-600 mb-2">Informações:</div>
                   {parseFloat(saleData.vendasMesas) > 0 && (
@@ -250,19 +303,11 @@ const SalesForm = () => {
                       </span>
                     </div>
                   )}
-                  {parseFloat(saleData.caixaInicial) > 0 && (
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600">💰 Caixa Inicial:</span>
-                      <span className="font-medium text-teal-600">
-                        {formatCurrency(parseFloat(saleData.caixaInicial).toFixed(2))}
-                      </span>
-                    </div>
-                  )}
-                  {parseFloat(saleData.caixaFinal) > 0 && (
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600">💳 Caixa Final:</span>
-                      <span className="font-medium text-emerald-600">
-                        {formatCurrency(parseFloat(saleData.caixaFinal).toFixed(2))}
+                  {calculateVendasTotal() > 0 && (
+                    <div className="flex justify-between items-center text-sm bg-blue-50 p-2 rounded-lg mt-2">
+                      <span className="text-gray-700 font-medium">📊 Total Vendas:</span>
+                      <span className="font-bold text-blue-600">
+                        {formatCurrency(calculateVendasTotal().toFixed(2))}
                       </span>
                     </div>
                   )}
@@ -270,7 +315,40 @@ const SalesForm = () => {
                 </>
               )}
               
-              {/* Total da Venda */}
+              {/* Subtotal das Formas de Pagamento */}
+              <div className="flex justify-between items-center">
+                <span className="text-md font-medium text-gray-700">Subtotal Pagamentos:</span>
+                <span className="text-lg font-semibold text-gray-800">
+                  {formatCurrency(calculateSubtotal().toFixed(2))}
+                </span>
+              </div>
+              
+              {/* Ajustes */}
+              {(parseFloat(saleData.encaixe) > 0 || parseFloat(saleData.desencaixe) > 0) && (
+                <>
+                  <hr className="my-2 border-gray-300" />
+                  <div className="text-sm font-medium text-gray-600 mb-2">Ajustes:</div>
+                  {parseFloat(saleData.encaixe) > 0 && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">➕ Encaixe:</span>
+                      <span className="font-medium text-green-600">
+                        + {formatCurrency(parseFloat(saleData.encaixe).toFixed(2))}
+                      </span>
+                    </div>
+                  )}
+                  {parseFloat(saleData.desencaixe) > 0 && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">➖ Desencaixe:</span>
+                      <span className="font-medium text-red-600">
+                        - {formatCurrency(parseFloat(saleData.desencaixe).toFixed(2))}
+                      </span>
+                    </div>
+                  )}
+                  <hr className="my-2 border-gray-300" />
+                </>
+              )}
+              
+              {/* Total Final da Venda */}
               <div className="flex justify-between items-center">
                 <span className="text-lg font-medium text-gray-700">Total da Venda:</span>
                 <span className="text-2xl font-bold text-accent">
@@ -302,7 +380,8 @@ const SalesForm = () => {
               onClick={() => setSaleData({
                 dinheiro: '', debitoInter: '', debitoStone: '', 
                 creditoInter: '', creditoStone: '', ifoodPG: '', pix: '', incentivoIfood: '',
-                vendasMesas: '', vendasEntregas: '', caixaInicial: '', caixaFinal: '',
+                vendasMesas: '', vendasEntregas: '',
+                encaixe: '', desencaixe: '',
                 dataVenda: new Date().toISOString().slice(0, 16),
                 observacoes: ''
               })}
