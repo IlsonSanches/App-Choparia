@@ -5,14 +5,15 @@ Sistema web moderno para controle de vendas de uma choparia, com múltiplas form
 ## 🚀 Funcionalidades
 
 - **Dashboard** com resumo de vendas (hoje, semana, mês)
-- **Registro de vendas** com 7 formas de pagamento:
+- **Registro de vendas** com 8 formas de pagamento:
   - Dinheiro
   - Débito Inter
   - Débito Stone
   - Crédito Inter
   - Crédito Stone
   - iFood PG
-  - PIX
+  - Pix Inter
+  - Pix Stone
 - **Histórico de vendas** com filtros e exportação para CSV
 - **Interface responsiva** para desktop e mobile
 - **Armazenamento em tempo real** com Firebase
@@ -138,7 +139,8 @@ src/
   creditoInter: "0.00",
   creditoStone: "0.00",
   ifoodPG: "0.00",
-  pix: "0.00",
+  pixInter: "0.00",
+  pixStone: "0.00",
   total: "0.00",
   observacoes: "string",
   dataVenda: timestamp,

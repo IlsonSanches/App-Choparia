@@ -34,7 +34,8 @@ const SalesHistory = () => {
     { key: 'creditoInter', label: 'Crédito Inter', icon: '🏦' },
     { key: 'creditoStone', label: 'Crédito Stone', icon: '💳' },
     { key: 'ifoodPG', label: 'iFood PG', icon: '🍔' },
-    { key: 'pix', label: 'PIX', icon: '📱' }
+    { key: 'pixInter', label: 'Pix Inter', icon: '📱' },
+    { key: 'pixStone', label: 'Pix Stone', icon: '📱' }
   ];
 
   const salesTypes = [
@@ -139,7 +140,8 @@ const SalesHistory = () => {
       creditoInter: sale.creditoInter || '',
       creditoStone: sale.creditoStone || '',
       ifoodPG: sale.ifoodPG || '',
-      pix: sale.pix || '',
+      pixInter: sale.pixInter || '',
+      pixStone: sale.pixStone || '',
       vendasMesas: sale.vendasMesas || '',
       vendasEntregas: sale.vendasEntregas || '',
       incentivoIfood: sale.incentivoIfood || '',
@@ -149,7 +151,7 @@ const SalesHistory = () => {
   };
 
   const handleInputChange = (field, value) => {
-    if (['dinheiro', 'debitoInter', 'debitoStone', 'creditoInter', 'creditoStone', 'ifoodPG', 'pix', 'vendasMesas', 'vendasEntregas', 'incentivoIfood', 'ifoodDesconto'].includes(field)) {
+    if (['dinheiro', 'debitoInter', 'debitoStone', 'creditoInter', 'creditoStone', 'ifoodPG', 'pixInter', 'pixStone', 'vendasMesas', 'vendasEntregas', 'incentivoIfood', 'ifoodDesconto'].includes(field)) {
       // Remove caracteres não numéricos e formata como moeda
       const numericValue = value.replace(/[^\d]/g, '');
       const formattedValue = numericValue ? (parseFloat(numericValue) / 100).toFixed(2) : '';
@@ -217,7 +219,7 @@ const SalesHistory = () => {
   };
 
   const exportToCSV = () => {
-    const headers = ['Data', 'Total', 'Vendas Mesas', 'Vendas Entregas', 'Incentivo iFood', 'iFood Desconto', 'Dinheiro', 'Débito Inter', 'Débito Stone', 'Crédito Inter', 'Crédito Stone', 'iFood PG', 'PIX', 'Observações'];
+    const headers = ['Data', 'Total', 'Vendas Mesas', 'Vendas Entregas', 'Incentivo iFood', 'iFood Desconto', 'Dinheiro', 'Débito Inter', 'Débito Stone', 'Crédito Inter', 'Crédito Stone', 'iFood PG', 'Pix Inter', 'Pix Stone', 'Observações'];
     
     const csvData = filteredSales.map(sale => [
       format(sale.dataVenda, 'dd/MM/yyyy HH:mm'),
@@ -232,8 +234,8 @@ const SalesHistory = () => {
       sale.creditoInter || '0',
       sale.creditoStone || '0',
       sale.ifoodPG || '0',
-      sale.pix || '0',
-      sale.incentivoIfood || '0',
+      sale.pixInter || '0',
+      sale.pixStone || '0',
       sale.observacoes || ''
     ]);
 
