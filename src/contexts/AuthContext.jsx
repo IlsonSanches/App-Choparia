@@ -85,37 +85,83 @@ export const AuthProvider = ({ children }) => {
   const checkForAdmin = async () => {
     try {
       console.log('🔍 Verificando se existe admin...');
-      const adminQuery = query(
-        collection(db, 'usuarios'), 
-        where('role', '==', 'admin')
-      );
-      const adminSnapshot = await getDocs(adminQuery);
-      const hasAdminResult = !adminSnapshot.empty;
-      console.log('👤 Admin encontrado:', hasAdminResult);
-      setHasAdmin(hasAdminResult);
-      return hasAdminResult;
-    } catch (error) {
-      console.error('❌ Erro ao verificar admin:', error);
       
-      // Se for erro de permissão, assumir que não há admin (primeira vez)
-      if (error.code === 'permission-denied' || error.message.includes('permissions')) {
-        console.log('🔓 Erro de permissão - assumindo primeira configuração');
-        setHasAdmin(false);
-        return false;
+      // Método simplificado: primeiro verificar config do sistema
+      try {
+        const configDoc = await getDoc(doc(db, 'config', 'system'));
+        if (configDoc.exists() && configDoc.data().hasAdmin) {
+          console.log('👤 Admin confirmado via config do sistema');
+          setHasAdmin(true);
+          return true;
+        }
+      } catch (configError) {
+        console.log('⚠️ Config do sistema não encontrada, tentando outros métodos');
       }
       
-      // Outros erros também assumem que não há admin
+      // Método alternativo: tentar buscar todos os usuários
+      try {
+        const usersSnapshot = await getDocs(collection(db, 'usuarios'));
+        
+        if (usersSnapshot.empty) {
+          console.log('📭 Nenhum usuário encontrado - primeiro acesso');
+          setHasAdmin(false);
+          return false;
+        }
+        
+        // Verificar se algum usuário é admin
+        let foundAdmin = false;
+        usersSnapshot.forEach((doc) => {
+          const userData = doc.data();
+          if (userData.role === 'admin') {
+            foundAdmin = true;
+          }
+        });
+        
+        console.log('👤 Admin encontrado via scan de usuários:', foundAdmin);
+        setHasAdmin(foundAdmin);
+        return foundAdmin;
+        
+      } catch (usersError) {
+        console.log('⚠️ Erro ao acessar usuários:', usersError.message);
+        
+        // Se é erro de permissão, assumir primeiro acesso
+        if (usersError.code === 'permission-denied' || 
+            usersError.message.includes('permissions') ||
+            usersError.message.includes('Missing or insufficient permissions')) {
+          console.log('🔓 Erro de permissão - assumindo primeiro acesso');
+          setHasAdmin(false);
+          return false;
+        }
+      }
+      
+      // Fallback: assumir primeiro acesso
+      console.log('❌ Todos os métodos falharam - assumindo primeiro acesso');
+      setHasAdmin(false);
+      return false;
+      
+    } catch (error) {
+      console.error('❌ Erro crítico ao verificar admin:', error);
       setHasAdmin(false);
       return false;
     }
   };
 
   useEffect(() => {
+    let isMounted = true;
+    
     const initializeAuth = async () => {
+      if (!isMounted) return;
+      
+      console.log('🚀 Inicializando autenticação...');
+      
       // Primeiro verificar se existe admin
       await checkForAdmin();
       
       const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        if (!isMounted) return;
+        
+        console.log('👤 Estado da autenticação mudou:', firebaseUser ? 'logado' : 'deslogado');
+        
         if (firebaseUser) {
           await loadUserData(firebaseUser);
         } else {
@@ -128,11 +174,16 @@ export const AuthProvider = ({ children }) => {
       return unsubscribe;
     };
 
-    const unsubscribe = initializeAuth();
+    const cleanup = initializeAuth();
     
     return () => {
-      if (unsubscribe && typeof unsubscribe.then === 'function') {
-        unsubscribe.then(unsub => unsub());
+      isMounted = false;
+      if (cleanup && typeof cleanup.then === 'function') {
+        cleanup.then(unsub => {
+          if (unsub && typeof unsub === 'function') {
+            unsub();
+          }
+        });
       }
     };
   }, []);

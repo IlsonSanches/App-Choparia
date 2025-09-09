@@ -1,5 +1,5 @@
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 
 export const createFirstAdmin = async (adminData) => {
@@ -29,8 +29,8 @@ export const createFirstAdmin = async (adminData) => {
       adminData.password
     );
 
-    // Salvar dados do admin no Firestore
-    await addDoc(collection(db, 'usuarios'), {
+    // Salvar dados do admin no Firestore usando UID como ID do documento
+    await setDoc(doc(db, 'usuarios', userCredential.user.uid), {
       uid: userCredential.user.uid,
       name: adminData.name,
       email: adminData.email,
@@ -39,6 +39,16 @@ export const createFirstAdmin = async (adminData) => {
       active: true,
       isFirstAdmin: true
     });
+
+    // Criar documento de configuração do sistema para facilitar futuras verificações
+    await setDoc(doc(db, 'config', 'system'), {
+      hasAdmin: true,
+      firstAdminCreatedAt: new Date(),
+      setupCompleted: true,
+      version: '1.0'
+    });
+
+    console.log('✅ Admin e configuração criados com sucesso');
 
     return {
       success: true,
