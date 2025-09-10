@@ -98,10 +98,11 @@ const SalesForm = () => {
   };
 
   const calculateConferencia = () => {
-    const totalSagres = calculateTotalSagres();
-    const totalPagamentos = calculateSubtotal();
-    const diferenca = calculateDiferenca();
-    return totalSagres - totalPagamentos + diferenca;
+    const totalSagres = calculateTotalSagres(); // Total Vendas (Mesas + Entregas)
+    const totalPagamentos = calculateSubtotal(); // Total das formas de pagamento
+    const diferenca = calculateDiferenca(); // Encaixe - Desencaixe
+    const incentivoIfood = parseFloat(saleData.incentivoIfood) || 0; // Incentivo iFood
+    return totalSagres - totalPagamentos + diferenca + incentivoIfood;
   };
 
   const handleSubmit = async (e) => {
@@ -422,6 +423,14 @@ const SalesForm = () => {
                       </span>
                     </div>
                   )}
+                  {parseFloat(saleData.incentivoIfood) > 0 && (
+                    <div className="flex justify-between items-center bg-white p-2 rounded border border-purple-100">
+                      <span className="text-gray-600">🎁 Incentivo iFood:</span>
+                      <span className="font-medium text-green-600">
+                        + {formatCurrency(parseFloat(saleData.incentivoIfood).toFixed(2))}
+                      </span>
+                    </div>
+                  )}
                   <hr className="border-purple-200" />
                 </div>
                 
@@ -429,7 +438,7 @@ const SalesForm = () => {
                   {calculateConferencia() >= 0 ? '+' : ''}{formatCurrency(Math.abs(calculateConferencia()).toFixed(2))}
                 </div>
                 <p className="text-xs text-purple-600 mt-2 text-center">
-                  Cálculo: Total Sagres - Total Pagamentos + Diferença Caixa
+                  Cálculo: Total Vendas - Total Pagamentos + Diferença + Incentivo iFood
                 </p>
               </div>
             </div>
