@@ -12,7 +12,8 @@ const SalesForm = () => {
     creditoInter: '',
     creditoStone: '',
     ifoodPG: '',
-    pix: '',
+    pixInter: '',
+    pixStone: '',
     incentivoIfood: '',
     ifoodDesconto: '',
     vendasMesas: '',
@@ -30,7 +31,8 @@ const SalesForm = () => {
     { key: 'creditoInter', label: 'Crédito Inter', color: 'bg-orange-600', icon: '🏦' },
     { key: 'creditoStone', label: 'Crédito Stone', color: 'bg-gray-700', icon: '💳' },
     { key: 'ifoodPG', label: 'iFood PG', color: 'bg-red-500', icon: '🍔' },
-    { key: 'pix', label: 'PIX', color: 'bg-blue-500', icon: '📱' }
+    { key: 'pixInter', label: 'PIX Inter', color: 'bg-blue-500', icon: '🏦' },
+    { key: 'pixStone', label: 'PIX Stone', color: 'bg-blue-600', icon: '💳' }
   ];
 
   const salesTypes = [
@@ -136,7 +138,8 @@ const SalesForm = () => {
         creditoInter: '',
         creditoStone: '',
         ifoodPG: '',
-        pix: '',
+        pixInter: '',
+        pixStone: '',
         incentivoIfood: '',
         vendasMesas: '',
         vendasEntregas: '',
@@ -571,7 +574,7 @@ const SalesForm = () => {
               type="button"
               onClick={() => setSaleData({
                 dinheiro: '', debitoInter: '', debitoStone: '', 
-                creditoInter: '', creditoStone: '', ifoodPG: '', pix: '',
+                creditoInter: '', creditoStone: '', ifoodPG: '', pixInter: '', pixStone: '',
                 incentivoIfood: '', ifoodDesconto: '', vendasMesas: '', vendasEntregas: '',
                 dataVenda: new Date().toISOString().slice(0, 16),
                 observacoes: ''
