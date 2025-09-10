@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import SalesForm from './components/SalesForm';
 import SalesHistory from './components/SalesHistory';
+import Reports from './components/Reports';
 import UserManagement from './components/UserManagement';
 import Login from './components/Login';
 import FirstAdminSetup from './components/FirstAdminSetup';
@@ -43,6 +44,8 @@ const AppContent = () => {
         return <SalesForm />;
       case 'historico':
         return <SalesHistory />;
+      case 'relatorios':
+        return <Reports />;
       case 'usuarios':
         return <UserManagement />;
       default:

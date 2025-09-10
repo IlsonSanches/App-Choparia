@@ -9,7 +9,8 @@ import {
   Users,
   LogOut,
   User,
-  Shield
+  Shield,
+  FileText
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -37,6 +38,13 @@ const Sidebar = ({ currentView, setCurrentView, isOpen, setIsOpen }) => {
       label: 'Histórico',
       icon: History,
       description: 'Ver vendas anteriores',
+      roles: ['admin']
+    },
+    {
+      id: 'relatorios',
+      label: 'Relatórios',
+      icon: FileText,
+      description: 'Análise por período',
       roles: ['admin']
     },
     {
