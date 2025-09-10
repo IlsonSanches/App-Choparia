@@ -31,8 +31,8 @@ const SalesForm = () => {
     { key: 'creditoInter', label: 'Crédito Inter', color: 'bg-orange-600', icon: '🏦' },
     { key: 'creditoStone', label: 'Crédito Stone', color: 'bg-gray-700', icon: '💳' },
     { key: 'ifoodPG', label: 'iFood PG', color: 'bg-red-500', icon: '🍔' },
-    { key: 'pixInter', label: 'Pix Inter', color: 'bg-blue-500', icon: '📱' },
-    { key: 'pixStone', label: 'Pix Stone', color: 'bg-blue-600', icon: '📱' }
+    { key: 'pixInter', label: 'PIX Inter', color: 'bg-blue-500', icon: '🏦' },
+    { key: 'pixStone', label: 'PIX Stone', color: 'bg-blue-600', icon: '💳' }
   ];
 
   const salesTypes = [
@@ -89,6 +89,19 @@ const SalesForm = () => {
     const vendasMesas = parseFloat(saleData.vendasMesas) || 0;
     const vendasEntregas = parseFloat(saleData.vendasEntregas) || 0;
     return vendasMesas + vendasEntregas;
+  };
+
+  const calculateDiferenca = () => {
+    const encaixe = parseFloat(saleData.encaixe) || 0;
+    const desencaixe = parseFloat(saleData.desencaixe) || 0;
+    return encaixe - desencaixe;
+  };
+
+  const calculateConferencia = () => {
+    const totalSagres = calculateTotalSagres();
+    const totalPagamentos = calculateSubtotal();
+    const diferenca = calculateDiferenca();
+    return totalSagres - totalPagamentos + diferenca;
   };
 
   const handleSubmit = async (e) => {
@@ -183,7 +196,7 @@ const SalesForm = () => {
           <div>
             <h4 className="text-md font-semibold text-gray-700 mb-2">Informações de Vendas</h4>
             <p className="text-sm text-gray-500 mb-3">Campos informativos (não somados ao total)</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               {salesTypes.map((type) => (
                 <div key={type.key} className="bg-gray-50 rounded-lg p-4">
                   <div className="flex items-center space-x-2 mb-2">
@@ -204,12 +217,33 @@ const SalesForm = () => {
                 </div>
               ))}
             </div>
+            
+            {/* Total Sagres - Campo calculado automaticamente */}
+            {calculateTotalSagres() > 0 && (
+              <div className="bg-blue-50 rounded-lg p-4 border-2 border-blue-200 mb-6">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">
+                    🍺
+                  </div>
+                  <label className="font-medium text-gray-700">
+                    Total Sagres
+                  </label>
+                  <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+                    Calculado
+                  </span>
+                </div>
+                <div className="w-full px-3 py-2 bg-blue-100 border border-blue-300 rounded-lg text-lg font-bold text-blue-700">
+                  {formatCurrency(calculateTotalSagres().toFixed(2))}
+                </div>
+                <p className="text-xs text-blue-600 mt-1">Soma automática: Vendas Mesas + Vendas Entregas</p>
+              </div>
+            )}
           </div>
 
           {/* Grid de formas de pagamento */}
           <div>
             <h4 className="text-md font-semibold text-gray-700 mb-3">Formas de Pagamento</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
             {paymentMethods.map((method) => (
               <div key={method.key} className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center space-x-2 mb-2">
@@ -254,12 +288,33 @@ const SalesForm = () => {
               </div>
             ))}
             </div>
+
+            {/* Total das Formas de Pagamento - Campo calculado automaticamente */}
+            {calculateSubtotal() > 0 && (
+              <div className="bg-green-50 rounded-lg p-4 border-2 border-green-200 mb-6">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm">
+                    💰
+                  </div>
+                  <label className="font-medium text-gray-700">
+                    Total Formas de Pagamento
+                  </label>
+                  <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">
+                    Calculado
+                  </span>
+                </div>
+                <div className="w-full px-3 py-2 bg-green-100 border border-green-300 rounded-lg text-lg font-bold text-green-700">
+                  {formatCurrency(calculateSubtotal().toFixed(2))}
+                </div>
+                <p className="text-xs text-green-600 mt-1">Soma de todas as formas de pagamento (exceto campos informativos)</p>
+              </div>
+            )}
           </div>
 
           {/* Encaixe e Desencaixe */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-700 mb-4">Ajustes de Caixa</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {/* Encaixe */}
               <div className="bg-green-50 rounded-lg p-4">
                 <div className="flex items-center space-x-3 mb-3">
@@ -300,7 +355,85 @@ const SalesForm = () => {
                 <p className="text-xs text-gray-500 mt-1">Valor a ser subtraído do total</p>
               </div>
             </div>
+
+            {/* Diferença - Campo calculado automaticamente */}
+            {(parseFloat(saleData.encaixe) > 0 || parseFloat(saleData.desencaixe) > 0) && (
+              <div className={`rounded-lg p-4 border-2 ${calculateDiferenca() >= 0 ? 'bg-blue-50 border-blue-200' : 'bg-orange-50 border-orange-200'}`}>
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm ${calculateDiferenca() >= 0 ? 'bg-blue-500' : 'bg-orange-500'}`}>
+                    {calculateDiferenca() >= 0 ? '📈' : '📉'}
+                  </div>
+                  <label className="font-medium text-gray-700">
+                    Diferença
+                  </label>
+                  <span className={`text-xs px-2 py-1 rounded-full ${calculateDiferenca() >= 0 ? 'bg-blue-100 text-blue-600' : 'bg-orange-100 text-orange-600'}`}>
+                    Calculado
+                  </span>
+                </div>
+                <div className={`w-full px-3 py-2 border rounded-lg text-lg font-bold ${calculateDiferenca() >= 0 ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-orange-100 border-orange-300 text-orange-700'}`}>
+                  {calculateDiferenca() >= 0 ? '+' : ''}{formatCurrency(Math.abs(calculateDiferenca()).toFixed(2))}
+                </div>
+                <p className={`text-xs mt-1 ${calculateDiferenca() >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
+                  Resultado: Encaixe - Desencaixe = {calculateDiferenca() >= 0 ? 'Saldo Positivo' : 'Saldo Negativo'}
+                </p>
+              </div>
+            )}
           </div>
+
+          {/* Conferência de Valor - Campo calculado automaticamente */}
+          {(calculateTotalSagres() > 0 || calculateSubtotal() > 0 || calculateDiferenca() !== 0) && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-700 mb-4">Conferência de Valor</h3>
+              <div className="bg-purple-50 rounded-lg p-4 border-2 border-purple-200">
+                <div className="flex items-center space-x-2 mb-3">
+                  <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm">
+                    🔍
+                  </div>
+                  <label className="font-medium text-gray-700">
+                    Total Conferência
+                  </label>
+                  <span className="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full">
+                    Calculado
+                  </span>
+                </div>
+                
+                <div className="space-y-2 mb-3 text-sm">
+                  {calculateTotalSagres() > 0 && (
+                    <div className="flex justify-between items-center bg-white p-2 rounded border border-purple-100">
+                      <span className="text-gray-600">🍺 Total Sagres:</span>
+                      <span className="font-medium text-blue-600">
+                        + {formatCurrency(calculateTotalSagres().toFixed(2))}
+                      </span>
+                    </div>
+                  )}
+                  {calculateSubtotal() > 0 && (
+                    <div className="flex justify-between items-center bg-white p-2 rounded border border-purple-100">
+                      <span className="text-gray-600">💰 Total Pagamentos:</span>
+                      <span className="font-medium text-red-600">
+                        - {formatCurrency(calculateSubtotal().toFixed(2))}
+                      </span>
+                    </div>
+                  )}
+                  {calculateDiferenca() !== 0 && (
+                    <div className="flex justify-between items-center bg-white p-2 rounded border border-purple-100">
+                      <span className="text-gray-600">📊 Diferença Caixa:</span>
+                      <span className={`font-medium ${calculateDiferenca() >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                        {calculateDiferenca() >= 0 ? '+ ' : '- '}{formatCurrency(Math.abs(calculateDiferenca()).toFixed(2))}
+                      </span>
+                    </div>
+                  )}
+                  <hr className="border-purple-200" />
+                </div>
+                
+                <div className={`w-full px-4 py-3 border rounded-lg text-xl font-bold text-center ${calculateConferencia() >= 0 ? 'bg-green-100 border-green-300 text-green-700' : 'bg-red-100 border-red-300 text-red-700'}`}>
+                  {calculateConferencia() >= 0 ? '+' : ''}{formatCurrency(Math.abs(calculateConferencia()).toFixed(2))}
+                </div>
+                <p className="text-xs text-purple-600 mt-2 text-center">
+                  Cálculo: Total Sagres - Total Pagamentos + Diferença Caixa
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Observações */}
           <div className="mb-6">
