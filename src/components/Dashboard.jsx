@@ -21,6 +21,12 @@ const Dashboard = () => {
   });
   const [recentSales, setRecentSales] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [monthlyEstimation, setMonthlyEstimation] = useState({
+    averageDaily: 0,
+    daysInMonth: 0,
+    projection: 0,
+    currentMonthTotal: 0
+  });
 
   const paymentMethods = [
     { key: 'dinheiro', label: 'Dinheiro', color: 'bg-green-500', icon: '💵' },
@@ -44,6 +50,68 @@ const Dashboard = () => {
       style: 'currency',
       currency: 'BRL'
     }).format(value || 0);
+  };
+
+  const calculateMonthlyEstimation = async () => {
+    try {
+      const salesCollection = collection(db, 'vendas');
+      const now = new Date();
+      const monthStart = startOfMonth(now);
+      const monthEnd = endOfMonth(now);
+      
+      // Buscar vendas do mês atual
+      const monthQuery = query(
+        salesCollection,
+        where('dataVenda', '>=', monthStart),
+        where('dataVenda', '<=', monthEnd),
+        orderBy('dataVenda', 'desc')
+      );
+      
+      const snapshot = await getDocs(monthQuery);
+      
+      let totalSagres = 0;
+      let daysWithSales = 0;
+      const dailyData = {};
+      
+      // Processar dados por dia
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const saleDate = data.dataVenda.toDate();
+        const dateKey = format(saleDate, 'yyyy-MM-dd');
+        
+        const vendasMesas = parseFloat(data.vendasMesas || 0);
+        const vendasEntregas = parseFloat(data.vendasEntregas || 0);
+        const dayTotalSagres = vendasMesas + vendasEntregas;
+        
+        if (dayTotalSagres > 0) {
+          if (!dailyData[dateKey]) {
+            dailyData[dateKey] = 0;
+            daysWithSales++;
+          }
+          dailyData[dateKey] += dayTotalSagres;
+          totalSagres += dayTotalSagres;
+        }
+      });
+      
+      // Calcular média diária do mês
+      const averageDaily = daysWithSales > 0 ? totalSagres / daysWithSales : 0;
+      
+      // Número de dias no mês atual
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      
+      // Projeção para o mês completo
+      const projection = averageDaily * daysInMonth;
+      
+      setMonthlyEstimation({
+        averageDaily,
+        daysInMonth,
+        projection,
+        currentMonthTotal: totalSagres
+      });
+      
+    } catch (error) {
+      console.error('Erro ao calcular estimativa mensal:', error);
+    }
   };
 
 
@@ -149,6 +217,9 @@ const Dashboard = () => {
       });
       setRecentSales(recent);
       
+      // Calcular estimativa mensal após carregar os dados principais
+      await calculateMonthlyEstimation();
+      
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     } finally {
@@ -238,6 +309,131 @@ const Dashboard = () => {
             <div className="bg-purple-100 p-3 rounded-full">
               <BarChart3 className="w-6 h-6 text-purple-600" />
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quadro de Estimativa Mensal */}
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-3">
+            <div className="bg-purple-100 p-3 rounded-full">
+              <TrendingUp className="w-6 h-6 text-purple-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Estimativa de Vendas Sagres - {format(new Date(), 'MMMM yyyy', { locale: ptBR })}
+              </h3>
+              <p className="text-sm text-gray-500">
+                Baseado na média diária do mês atual
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Vendas Atuais do Mês */}
+          <div className="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-600">Vendas Atuais</p>
+                <p className="text-2xl font-bold text-blue-700">
+                  {formatCurrency(monthlyEstimation.currentMonthTotal)}
+                </p>
+                <p className="text-xs text-blue-500">Este mês</p>
+              </div>
+              <div className="text-blue-500">
+                <BarChart3 className="w-8 h-8" />
+              </div>
+            </div>
+          </div>
+
+          {/* Média Diária */}
+          <div className="bg-green-50 rounded-lg p-4 border-l-4 border-green-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-600">Média Diária</p>
+                <p className="text-2xl font-bold text-green-700">
+                  {formatCurrency(monthlyEstimation.averageDaily)}
+                </p>
+                <p className="text-xs text-green-500">Por dia</p>
+              </div>
+              <div className="text-green-500">
+                <Calendar className="w-8 h-8" />
+              </div>
+            </div>
+          </div>
+
+          {/* Projeção Mensal */}
+          <div className="bg-purple-50 rounded-lg p-4 border-l-4 border-purple-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-purple-600">Projeção Mensal</p>
+                <p className="text-2xl font-bold text-purple-700">
+                  {formatCurrency(monthlyEstimation.projection)}
+                </p>
+                <p className="text-xs text-purple-500">Estimativa total</p>
+              </div>
+              <div className="text-purple-500">
+                <TrendingUp className="w-8 h-8" />
+              </div>
+            </div>
+          </div>
+
+          {/* Dias no Mês */}
+          <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-gray-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Dias no Mês</p>
+                <p className="text-2xl font-bold text-gray-700">
+                  {monthlyEstimation.daysInMonth}
+                </p>
+                <p className="text-xs text-gray-500">Total de dias</p>
+              </div>
+              <div className="text-gray-500">
+                <Calendar className="w-8 h-8" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Barra de Progresso */}
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-700">Progresso do Mês</span>
+            <span className="text-sm text-gray-500">
+              {formatCurrency(monthlyEstimation.currentMonthTotal)} / {formatCurrency(monthlyEstimation.projection)}
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-3">
+            <div 
+              className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-300"
+              style={{ 
+                width: `${monthlyEstimation.projection > 0 ? (monthlyEstimation.currentMonthTotal / monthlyEstimation.projection) * 100 : 0}%` 
+              }}
+            ></div>
+          </div>
+          <div className="flex justify-between text-xs text-gray-500 mt-1">
+            <span>0%</span>
+            <span className="font-medium">
+              {monthlyEstimation.projection > 0 ? 
+                `${((monthlyEstimation.currentMonthTotal / monthlyEstimation.projection) * 100).toFixed(1)}%` : 
+                '0%'
+              }
+            </span>
+            <span>100%</span>
+          </div>
+        </div>
+
+        {/* Informações Adicionais */}
+        <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+          <div className="text-sm text-gray-600">
+            <p className="mb-1">
+              <strong>Cálculo:</strong> Média diária × {monthlyEstimation.daysInMonth} dias = {formatCurrency(monthlyEstimation.projection)}
+            </p>
+            <p>
+              <strong>Baseado em:</strong> Vendas Sagres (Mesas + Entregas) do mês atual
+            </p>
           </div>
         </div>
       </div>
