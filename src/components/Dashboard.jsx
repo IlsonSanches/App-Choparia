@@ -43,7 +43,8 @@ const Dashboard = () => {
     { key: 'vendasMesas', label: 'Vendas Mesas', color: 'bg-purple-500', icon: '🍽️' },
     { key: 'vendasEntregas', label: 'Vendas Entregas', color: 'bg-indigo-500', icon: '🚚' },
     { key: 'incentivoIfood', label: 'Incentivo iFood', color: 'bg-yellow-400', icon: '🎁' },
-    { key: 'ifoodDesconto', label: 'iFood Desconto', color: 'bg-red-300', icon: '📉' }
+    { key: 'ifoodDesconto', label: 'iFood Desconto', color: 'bg-red-300', icon: '📉' },
+    { key: 'ifoodVenda', label: 'iFood Venda', color: 'bg-orange-400', icon: '🍔' }
   ];
 
   const formatCurrency = (value) => {

@@ -16,6 +16,7 @@ const SalesForm = () => {
     pixStone: '',
     incentivoIfood: '',
     ifoodDesconto: '',
+    ifoodVenda: '',
     vendasMesas: '',
     vendasEntregas: '',
     dataVenda: new Date().toISOString().slice(0, 16), // Data e hora atual
@@ -43,7 +44,8 @@ const SalesForm = () => {
   // Campos que aparecem na seção de pagamentos mas NÃO somam no total
   const nonSumPayments = [
     { key: 'incentivoIfood', label: 'Incentivo iFood', color: 'bg-yellow-400', icon: '🎁' },
-    { key: 'ifoodDesconto', label: 'iFood Desconto', color: 'bg-red-300', icon: '📉' }
+    { key: 'ifoodDesconto', label: 'iFood Desconto', color: 'bg-red-300', icon: '📉' },
+    { key: 'ifoodVenda', label: 'iFood Venda', color: 'bg-orange-400', icon: '🍔' }
   ];
 
   const handleInputChange = (field, value) => {
@@ -142,6 +144,8 @@ const SalesForm = () => {
         pixInter: '',
         pixStone: '',
         incentivoIfood: '',
+        ifoodDesconto: '',
+        ifoodVenda: '',
         vendasMesas: '',
         vendasEntregas: '',
         encaixe: '',
@@ -530,7 +534,7 @@ const SalesForm = () => {
               
               {/* Total Final da Venda */}
               {/* Campos iFood Informativos */}
-              {(parseFloat(saleData.incentivoIfood) > 0 || parseFloat(saleData.ifoodDesconto) > 0) && (
+              {(parseFloat(saleData.incentivoIfood) > 0 || parseFloat(saleData.ifoodDesconto) > 0 || parseFloat(saleData.ifoodVenda) > 0) && (
                 <>
                   <div className="text-sm font-medium text-gray-600 mb-2">Valores iFood (Informativos):</div>
                   {parseFloat(saleData.incentivoIfood) > 0 && (
@@ -542,10 +546,18 @@ const SalesForm = () => {
                     </div>
                   )}
                   {parseFloat(saleData.ifoodDesconto) > 0 && (
-                    <div className="flex justify-between items-center text-sm bg-red-50 p-2 rounded-lg">
+                    <div className="flex justify-between items-center text-sm bg-red-50 p-2 rounded-lg mb-1">
                       <span className="text-gray-600">📉 iFood Desconto:</span>
                       <span className="font-medium text-red-600">
                         {formatCurrency(parseFloat(saleData.ifoodDesconto).toFixed(2))}
+                      </span>
+                    </div>
+                  )}
+                  {parseFloat(saleData.ifoodVenda) > 0 && (
+                    <div className="flex justify-between items-center text-sm bg-orange-50 p-2 rounded-lg">
+                      <span className="text-gray-600">🍔 iFood Venda:</span>
+                      <span className="font-medium text-orange-600">
+                        {formatCurrency(parseFloat(saleData.ifoodVenda).toFixed(2))}
                       </span>
                     </div>
                   )}
@@ -584,7 +596,7 @@ const SalesForm = () => {
               onClick={() => setSaleData({
                 dinheiro: '', debitoInter: '', debitoStone: '', 
                 creditoInter: '', creditoStone: '', ifoodPG: '', pixInter: '', pixStone: '',
-                incentivoIfood: '', ifoodDesconto: '', vendasMesas: '', vendasEntregas: '',
+                incentivoIfood: '', ifoodDesconto: '', ifoodVenda: '', vendasMesas: '', vendasEntregas: '',
                 dataVenda: new Date().toISOString().slice(0, 16),
                 observacoes: ''
               })}

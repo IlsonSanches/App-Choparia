@@ -42,7 +42,8 @@ const SalesHistory = () => {
     { key: 'vendasMesas', label: 'Vendas Mesas', icon: '🍽️' },
     { key: 'vendasEntregas', label: 'Vendas Entregas', icon: '🚚' },
     { key: 'incentivoIfood', label: 'Incentivo iFood', icon: '🎁' },
-    { key: 'ifoodDesconto', label: 'iFood Desconto', icon: '📉' }
+    { key: 'ifoodDesconto', label: 'iFood Desconto', icon: '📉' },
+    { key: 'ifoodVenda', label: 'iFood Venda', icon: '🍔' }
   ];
 
   const formatCurrency = (value) => {
@@ -146,12 +147,13 @@ const SalesHistory = () => {
       vendasEntregas: sale.vendasEntregas || '',
       incentivoIfood: sale.incentivoIfood || '',
       ifoodDesconto: sale.ifoodDesconto || '',
+      ifoodVenda: sale.ifoodVenda || '',
       observacoes: sale.observacoes || ''
     });
   };
 
   const handleInputChange = (field, value) => {
-    if (['dinheiro', 'debitoInter', 'debitoStone', 'creditoInter', 'creditoStone', 'ifoodPG', 'pixInter', 'pixStone', 'vendasMesas', 'vendasEntregas', 'incentivoIfood', 'ifoodDesconto'].includes(field)) {
+    if (['dinheiro', 'debitoInter', 'debitoStone', 'creditoInter', 'creditoStone', 'ifoodPG', 'pixInter', 'pixStone', 'vendasMesas', 'vendasEntregas', 'incentivoIfood', 'ifoodDesconto', 'ifoodVenda'].includes(field)) {
       // Remove caracteres não numéricos e formata como moeda
       const numericValue = value.replace(/[^\d]/g, '');
       const formattedValue = numericValue ? (parseFloat(numericValue) / 100).toFixed(2) : '';
@@ -219,7 +221,7 @@ const SalesHistory = () => {
   };
 
   const exportToCSV = () => {
-    const headers = ['Data', 'Total', 'Vendas Mesas', 'Vendas Entregas', 'Incentivo iFood', 'iFood Desconto', 'Dinheiro', 'Débito Inter', 'Débito Stone', 'Crédito Inter', 'Crédito Stone', 'iFood PG', 'Pix Inter', 'Pix Stone', 'Observações'];
+    const headers = ['Data', 'Total', 'Vendas Mesas', 'Vendas Entregas', 'Incentivo iFood', 'iFood Desconto', 'iFood Venda', 'Dinheiro', 'Débito Inter', 'Débito Stone', 'Crédito Inter', 'Crédito Stone', 'iFood PG', 'Pix Inter', 'Pix Stone', 'Observações'];
     
     const csvData = filteredSales.map(sale => [
       format(sale.dataVenda, 'dd/MM/yyyy HH:mm'),
@@ -228,6 +230,7 @@ const SalesHistory = () => {
       sale.vendasEntregas || '0',
       sale.incentivoIfood || '0',
       sale.ifoodDesconto || '0',
+      sale.ifoodVenda || '0',
       sale.dinheiro || '0',
       sale.debitoInter || '0',
       sale.debitoStone || '0',
