@@ -5,6 +5,7 @@ Sistema web moderno para controle de vendas de uma choparia, com múltiplas form
 ## 🚀 Funcionalidades
 
 - **Dashboard** com resumo de vendas (hoje, semana, mês)
+- **Quadro de estimativa mensal** baseado na média diária do mês atual
 - **Registro de vendas** com 8 formas de pagamento:
   - Dinheiro
   - Débito Inter
@@ -12,9 +13,19 @@ Sistema web moderno para controle de vendas de uma choparia, com múltiplas form
   - Crédito Inter
   - Crédito Stone
   - iFood PG
-  - Pix Inter
-  - Pix Stone
+  - PIX Inter
+  - PIX Stone
+- **Campos informativos** (não somam no total):
+  - Vendas Mesas
+  - Vendas Entregas
+  - Incentivo iFood
+  - iFood Desconto
+  - iFood Venda
+- **Ajustes de caixa** (Encaixe e Desencaixe)
+- **Conferência automática** de valores
 - **Histórico de vendas** com filtros e exportação para CSV
+- **Sistema de autenticação** com roles (admin/user)
+- **Gerenciamento de usuários** (apenas admins)
 - **Interface responsiva** para desktop e mobile
 - **Armazenamento em tempo real** com Firebase
 
@@ -23,8 +34,10 @@ Sistema web moderno para controle de vendas de uma choparia, com múltiplas form
 - **Frontend**: React 18 + Vite
 - **Styling**: Tailwind CSS
 - **Banco de Dados**: Firebase Firestore
+- **Autenticação**: Firebase Auth
 - **Ícones**: Lucide React
 - **Notificações**: React Hot Toast
+- **Gráficos**: Recharts
 - **Data**: date-fns
 
 ## 📋 Pré-requisitos
@@ -70,18 +83,8 @@ const firebaseConfig = {
 
 ### 4. Configurar regras do Firestore
 
-No Firebase Console, vá em Firestore Database → Regras e configure:
+No Firebase Console, vá em Firestore Database → Regras e confi
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Permitir leitura e escrita na coleção 'vendas'
-    match /vendas/{document} {
-      allow read, write: if true;
-    }
-  }
-}
 ```
 
 ## 🚀 Executar o projeto
@@ -95,37 +98,61 @@ npm run dev
 
 ## 📱 Como usar
 
+### Primeiro acesso
+1. Acesse o sistema pela primeira vez
+2. Crie o primeiro administrador
+3. Faça login com as credenciais criadas
+
 ### Registrar uma venda
 1. Clique em "Nova Venda" no menu lateral
 2. Preencha os valores por forma de pagamento
-3. Adicione observações se necessário
-4. Clique em "Registrar Venda"
+3. Adicione valores informativos (Vendas Mesas, Entregas, iFood)
+4. Configure ajustes de caixa se necessário
+5. Adicione observações se necessário
+6. Clique em "Registrar Venda"
 
 ### Visualizar dashboard
 1. Clique em "Dashboard" no menu lateral
 2. Veja resumos de hoje, semana e mês
 3. Analise vendas por forma de pagamento
+4. Consulte a estimativa mensal de vendas Sagres
+5. Acompanhe o progresso do mês atual
 
 ### Consultar histórico
 1. Clique em "Histórico" no menu lateral
 2. Use filtros por data, forma de pagamento ou busca
-3. Exporte dados para CSV
-4. Visualize detalhes clicando no ícone de olho
+3. Edite vendas existentes clicando no ícone de lápis
+4. Exporte dados para CSV
+5. Visualize detalhes clicando no ícone de olho
+
+### Gerenciar usuários (apenas admins)
+1. Clique em "Usuários" no menu lateral
+2. Adicione novos usuários
+3. Defina permissões (admin/user)
+4. Edite ou remova usuários existentes
 
 ## 🏗️ Estrutura do projeto
 
 ```
 src/
 ├── components/
-│   ├── Dashboard.jsx      # Dashboard principal
-│   ├── SalesForm.jsx      # Formulário de vendas
-│   ├── SalesHistory.jsx   # Histórico de vendas
-│   └── Sidebar.jsx        # Menu lateral
+│   ├── Dashboard.jsx         # Dashboard principal
+│   ├── SalesForm.jsx         # Formulário de vendas
+│   ├── SalesHistory.jsx      # Histórico de vendas
+│   ├── Sidebar.jsx           # Menu lateral
+│   ├── Login.jsx             # Tela de login
+│   ├── FirstAdminSetup.jsx   # Setup inicial do admin
+│   └── UserManagement.jsx    # Gerenciamento de usuários
+├── contexts/
+│   └── AuthContext.jsx       # Contexto de autenticação
 ├── config/
-│   └── firebase.js        # Configuração Firebase
-├── App.jsx               # Componente principal
-├── main.jsx             # Ponto de entrada
-└── index.css            # Estilos globais
+│   └── firebase.js           # Configuração Firebase
+├── utils/
+│   ├── createFirstAdmin.js   # Utilitário para criar admin
+│   └── fixAdminRole.js       # Utilitário para corrigir roles
+├── App.jsx                   # Componente principal
+├── main.jsx                  # Ponto de entrada
+└── index.css                 # Estilos globais
 ```
 
 ## 📊 Estrutura dos dados
@@ -133,6 +160,7 @@ src/
 ### Coleção 'vendas' no Firestore:
 ```javascript
 {
+  // Formas de pagamento (somam no total)
   dinheiro: "0.00",
   debitoInter: "0.00",
   debitoStone: "0.00", 
@@ -141,10 +169,40 @@ src/
   ifoodPG: "0.00",
   pixInter: "0.00",
   pixStone: "0.00",
+  
+  // Campos informativos (não somam no total)
+  vendasMesas: "0.00",
+  vendasEntregas: "0.00",
+  incentivoIfood: "0.00",
+  ifoodDesconto: "0.00",
+  ifoodVenda: "0.00",
+  
+  // Ajustes de caixa
+  encaixe: "0.00",
+  desencaixe: "0.00",
+  
+  // Totais calculados
+  subtotal: "0.00",
   total: "0.00",
+  totalSagres: "0.00",
+  
+  // Metadados
   observacoes: "string",
   dataVenda: timestamp,
   timestamp: number
+}
+```
+
+### Coleção 'usuarios' no Firestore:
+```javascript
+{
+  uid: "string",
+  name: "string",
+  email: "string",
+  role: "admin" | "user",
+  active: boolean,
+  createdAt: timestamp,
+  updatedAt: timestamp
 }
 ```
 
@@ -157,6 +215,21 @@ src/
 
 ### Formas de pagamento
 Para adicionar/remover formas de pagamento, edite o array `paymentMethods` nos componentes.
+
+### Campos informativos
+Para adicionar/remover campos informativos, edite o array `nonSumPayments` no SalesForm.jsx.
+
+## 🆕 Funcionalidades Implementadas
+
+### v1.1.0 - Atualizações Recentes
+- ✅ **Campo iFood Venda** adicionado como campo informativo
+- ✅ **Quadro de estimativa mensal** no Dashboard
+- ✅ **Sistema de autenticação** completo com roles
+- ✅ **Gerenciamento de usuários** para administradores
+- ✅ **Ajustes de caixa** (Encaixe/Desencaixe)
+- ✅ **Conferência automática** de valores
+- ✅ **8 formas de pagamento** completas
+- ✅ **5 campos informativos** para controle detalhado
 
 ## 🚀 Deploy
 
