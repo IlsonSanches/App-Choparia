@@ -35,7 +35,8 @@ const Dashboard = () => {
     { key: 'creditoInter', label: 'Crédito Inter', color: 'bg-orange-600', icon: '🏦' },
     { key: 'creditoStone', label: 'Crédito Stone', color: 'bg-gray-700', icon: '💳' },
     { key: 'ifoodPG', label: 'iFood PG', color: 'bg-red-500', icon: '🍔' },
-    { key: 'pix', label: 'PIX', color: 'bg-blue-500', icon: '📱' }
+    { key: 'pixInter', label: 'Pix Inter', color: 'bg-blue-500', icon: '📱' },
+    { key: 'pixStone', label: 'Pix Stone', color: 'bg-blue-600', icon: '📱' }
   ];
 
   const salesTypes = [
